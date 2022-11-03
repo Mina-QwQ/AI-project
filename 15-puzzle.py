@@ -36,28 +36,32 @@ def expand(current):
     
     for r in range(GRID_SIZE):
         for c in range(GRID_SIZE): 
-            if current[r][c] == '0': #find board unit with '0'
+            if current.board[r][c] == '0': #find board unit with '0'
                 row, col = r, c
                 break
     children = [] 
     for h in range(row-1, row+2): 
         if h < 0 or h >= GRID_SIZE or h == row: #if not valid for 0 to move to
             continue
-        child = copy.deepcopy(current)
-        print(h, col, child[h][col], 'and original is ', row, col, child[row][col])
+        child = copy.deepcopy(current.board)
         child[row][col], child[h][col] = child[h][col], child[row][col]
         children.append(child)
     for v in range(col-1, col+2):
         if v < 0 or v >= GRID_SIZE or v == col: #if not valid for 0 to move to
             continue 
-        child = copy.deepcopy(current)
-        print(row, v, child[row][v], 'and original is ', row, col, child[row][col])
+        child = copy.deepcopy(current.board)
         child[row][col], child[row][v] = child[row][v], child[row][col]
         children.append(child)
     return children
 
-def insert_sort(board, lst):
-    return 
+def insert_sort(current_node, lst):
+    index = 0
+    for node in lst: 
+        if current_node.fn < node.fn:
+            break
+        index += 1
+    lst.insert(index, current_node)
+    return lst
 
 class node():
     def __init__(self, previous, board, fn, gn):
@@ -79,11 +83,19 @@ def Graph_A_star(W, current, goal):
         reached.append(current.board)
         children = expand(current) # expand current node
         for child in children: # put child nodes in priority queue
-            tree_node = node(current, child, generate_fn(child, goal, W, current.gn+1), current.gn + 1) 
-            insert_sort(tree_node, priority)
+            child_node = node(current, child, generate_fn(child, goal, W, current.gn+1), current.gn + 1) 
+            insert_sort(child_node, priority)
         current = priority.popleft()
     return current # when we finished searching
     
 W, current, goal = read_file(input()) # read input file from terminal
-Graph_A_star(W, current, goal, priority, reached)
+result = Graph_A_star(W, current, goal)
+soln_path = []
+while result != None:
+    soln_path.insert(0, result)
+    result = result.previous
 
+for soln_node in soln_path:
+    for row in soln_node.board:
+        print(row)
+    print('\n')
