@@ -3,6 +3,13 @@ import copy
 
 GRID_SIZE = 4 
 
+"""
+reads in input file
+params:
+string file_name 
+returns:
+numeric W, 2D array current, 2D array goal
+"""
 def read_file(file_name):
      f = open(file_name, 'r')
      W = float(f.readline())
@@ -12,10 +19,16 @@ def read_file(file_name):
      goal = [f.readline().split() for _ in range(GRID_SIZE)]
      return W, current, goal
 
-
+"""
+generates f(n) = g(n) + W * h(n)
+params:
+2D array current, 2D array goal, W numeric, gn numeric
+returns: 
+fn numeric
+"""
 def generate_fn(current, goal, W, gn):
+
     hn = 0
-    #f(n) = g(n) + W * h(n)  
     for r in range(GRID_SIZE):
         for c in range(GRID_SIZE): #for each value 
             if current[r][c] == '0': #board unit with no number
@@ -32,6 +45,13 @@ def generate_fn(current, goal, W, gn):
     fn = gn + W * hn
     return fn
 
+"""
+expands given state node 
+params:
+node Object current
+returns:
+array of 2D array successors
+"""
 def expand(current):
     
     for r in range(GRID_SIZE):
@@ -54,22 +74,39 @@ def expand(current):
         children.append(child)
     return children
 
-def insert_sort(current_node, lst):
+
+"""
+inserts given state node into frontier 
+params:
+node Object current_node
+deque Object queue
+returns:
+deque Object queue
+"""
+def insert_sort(current_node, queue):
     index = 0
-    for node in lst: 
+    for node in queue: 
         if current_node.fn < node.fn:
             break
         index += 1
-    lst.insert(index, current_node)
-    return lst
+    queue.insert(index, current_node)
 
+"""
+node Object to store critical data values of each state node 
+data members:
+parent node Object previous 
+2D array board board
+numeric fn
+numeric gn
+"""
 class node():
     def __init__(self, previous, board, fn, gn):
         self.previous = previous
         self.board = board
         self.fn = fn
         self.gn = gn
-        
+
+
 def Graph_A_star(W, current, goal):
     current = node(None, current, generate_fn(current, goal, W, 0), 0)
     priority = deque() # our priority queue
