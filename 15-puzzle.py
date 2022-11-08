@@ -11,12 +11,14 @@ returns:
 numeric W, 2D array current, 2D array goal
 """
 def read_file(file_name):
+     print(file_name)
      f = open(file_name, 'r')
      W = float(f.readline())
      f.readline()
-     current = [f.readline().split() for _ in range(GRID_SIZE)]
+     current = [f.readline().strip('\n').split(' ') for _ in range(GRID_SIZE)]
      f.readline()
-     goal = [f.readline().split() for _ in range(GRID_SIZE)]
+     goal = [f.readline().strip('\n').split(' ') for _ in range(GRID_SIZE)]
+     f.close()
      return W, current, goal
 
 """
@@ -59,19 +61,23 @@ def expand(current):
             if current.board[r][c] == '0': #find board unit with '0'
                 row, col = r, c
                 break
-    children = [] 
-    for h in range(row-1, row+2): 
-        if h < 0 or h >= GRID_SIZE or h == row: #if not valid for 0 to move to
-            continue
+    children = []
+    if row > 0:
         child = copy.deepcopy(current.board)
-        child[row][col], child[h][col] = child[h][col], child[row][col]
-        children.append(child)
-    for v in range(col-1, col+2):
-        if v < 0 or v >= GRID_SIZE or v == col: #if not valid for 0 to move to
-            continue 
+        child[row][col], child[row-1][col] = child[row-1][col], child[row][col]
+        children.append((child, 'U'))
+    if row < GRID_SIZE-1:
         child = copy.deepcopy(current.board)
-        child[row][col], child[row][v] = child[row][v], child[row][col]
-        children.append(child)
+        child[row][col], child[row+1][col] = child[row+1][col], child[row][col]
+        children.append((child, 'D'))
+    if col > 0:
+        child = copy.deepcopy(current.board)
+        child[row][col], child[row][col-1] = child[row][col-1], child[row][col]
+        children.append((child, 'L'))
+    if col < GRID_SIZE-1:
+        child = copy.deepcopy(current.board)
+        child[row][col], child[row][col+1] = child[row][col+1], child[row][col]
+        children.append((child, 'R'))
     return children
 
 
@@ -100,37 +106,71 @@ numeric fn
 numeric gn
 """
 class node():
-    def __init__(self, previous, board, fn, gn):
+    def __init__(self, previous, board, fn, gn, move):
         self.previous = previous
         self.board = board
         self.fn = fn
         self.gn = gn
+        self.move = move
 
 
 def Graph_A_star(W, current, goal):
-    current = node(None, current, generate_fn(current, goal, W, 0), 0)
+    current = node(None, current, generate_fn(current, goal, W, 0), 0, None)
+    N = 1
     priority = deque() # our priority queue
     reached = [] # nodes that we have reached
     root = current
     while current.board != goal:
         # if we didn't reach goal
-        if current.board in reached:
-            current = priority.popleft()
-            continue
+
         reached.append(current.board)
         children = expand(current) # expand current node
         for child in children: # put child nodes in priority queue
-            child_node = node(current, child, generate_fn(child, goal, W, current.gn+1), current.gn + 1) 
+            if child[0] in reached:
+                 print('here')
+                 continue
+            child_node = node(current, child[0], generate_fn(child[0], goal, W, current.gn+1), current.gn + 1, child[1])
+            N+=1
             insert_sort(child_node, priority)
         current = priority.popleft()
-    return current # when we finished searching
-    
-W, current, goal = read_file(input()) # read input file from terminal
-result = Graph_A_star(W, current, goal)
+        print(current.board)
+    return N, current # when we finished searching
+
+filename = input("Filename: ")    
+W, initial, goal = read_file(filename) # read input file from terminal
+
+N, result = Graph_A_star(W, initial, goal)
+
+f = open("result_"+filename, 'w')
+read = open(filename, 'r')
+read.readline() # read W
+read.readline() # read space
+line = read.readline()
+while line != '':
+     f.write(line)
+     line = read.readline()
+
+f.write('\n')
+f.write(str(W)+'\n')
+
 soln_path = []
-while result != None:
+moves = []
+fn = []
+d = 0
+while result.board != initial:
     soln_path.insert(0, result)
+    moves.insert(0, result.move)
+    fn.insert(0, str(result.fn))
     result = result.previous
+    d+=1
+fn.insert(0, str(result.fn))
+
+f.write(str(d)+'\n')
+f.write(str(N)+'\n')
+f.write(' '.join(moves)+'\n')
+f.write(' '.join(fn))
+
+f.close()
 
 for soln_node in soln_path:
     for row in soln_node.board:
