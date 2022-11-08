@@ -15,9 +15,9 @@ def read_file(file_name):
      f = open(file_name, 'r')
      W = float(f.readline())
      f.readline()
-     current = [f.readline().strip('\n').split(' ') for _ in range(GRID_SIZE)]
+     current = [f.readline().strip('\n').strip(' ').split(' ') for _ in range(GRID_SIZE)]
      f.readline()
-     goal = [f.readline().strip('\n').split(' ') for _ in range(GRID_SIZE)]
+     goal = [f.readline().strip('\n').strip(' ').split(' ') for _ in range(GRID_SIZE)]
      f.close()
      return W, current, goal
 
@@ -127,17 +127,16 @@ def Graph_A_star(W, current, goal):
         children = expand(current) # expand current node
         for child in children: # put child nodes in priority queue
             if child[0] in reached:
-                 print('here')
                  continue
             child_node = node(current, child[0], generate_fn(child[0], goal, W, current.gn+1), current.gn + 1, child[1])
             N+=1
             insert_sort(child_node, priority)
         current = priority.popleft()
-        print(current.board)
     return N, current # when we finished searching
 
 filename = input("Filename: ")    
 W, initial, goal = read_file(filename) # read input file from terminal
+print(goal)
 
 N, result = Graph_A_star(W, initial, goal)
 
