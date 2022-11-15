@@ -62,19 +62,19 @@ def expand(current):
                 row, col = r, c
                 break
     children = []
-    if row > 0:
+    if row > 0: # look if 0 can move up
         child = copy.deepcopy(current.board)
         child[row][col], child[row-1][col] = child[row-1][col], child[row][col]
         children.append((child, 'U'))
-    if row < GRID_SIZE-1:
+    if row < GRID_SIZE-1: # look if 0 can move down
         child = copy.deepcopy(current.board)
         child[row][col], child[row+1][col] = child[row+1][col], child[row][col]
         children.append((child, 'D'))
-    if col > 0:
+    if col > 0: # look if 0 can move left
         child = copy.deepcopy(current.board)
         child[row][col], child[row][col-1] = child[row][col-1], child[row][col]
         children.append((child, 'L'))
-    if col < GRID_SIZE-1:
+    if col < GRID_SIZE-1: # look if 0 can move right
         child = copy.deepcopy(current.board)
         child[row][col], child[row][col+1] = child[row][col+1], child[row][col]
         children.append((child, 'R'))
@@ -136,7 +136,6 @@ def Graph_A_star(W, current, goal):
 
 filename = input("Filename: ")    
 W, initial, goal = read_file(filename) # read input file from terminal
-print(goal)
 
 N, result = Graph_A_star(W, initial, goal)
 
@@ -144,10 +143,10 @@ f = open("result_"+filename, 'w')
 read = open(filename, 'r')
 read.readline() # read W
 read.readline() # read space
-line = read.readline()
-while line != '':
-     f.write(line)
-     line = read.readline()
+
+for _ in range(9):
+     f.write(read.readline())
+read.close()
 
 f.write('\n')
 f.write(str(W)+'\n')
@@ -157,7 +156,7 @@ moves = []
 fn = []
 d = 0
 while result.board != initial:
-    soln_path.insert(0, result)
+    #soln_path.insert(0, result)
     moves.insert(0, result.move)
     fn.insert(0, str(result.fn))
     result = result.previous
@@ -171,7 +170,8 @@ f.write(' '.join(fn))
 
 f.close()
 
-for soln_node in soln_path:
+'''for soln_node in soln_path:
     for row in soln_node.board:
         print(row)
     print('\n')
+'''
